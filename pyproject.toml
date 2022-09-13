@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "rabbitmq-consumer-gurobi"
+version = "0.1.0"
+description = ""
+authors = ["vbubblery <zhoujuncheng0116@gmail.com>"]
+readme = "README.md"
+packages = [{include = "rabbitmq_consumer_gurobi"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pika = "^1.3.0"
+PuLP = "2.3.1"
+gurobipy = "^9.5.2"
+python-logstash = "^0.4.8"
+python-dotenv = "^0.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
