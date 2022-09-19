@@ -1,1 +1,2 @@
 .env
+gurobi_log_*
