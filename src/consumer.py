@@ -61,8 +61,7 @@ def startConsumer():
                 "timeLimit": json_model["timeLimit"],
                 "gapRel": json_model["gapRel"],
             }
-
-            dict_res[model_id] = _solve_model(json_model, params, job_id=job_id)
+            dict_res[model_id] = _solve_model(json_model["model"], params, job_id=job_id)
 
         return dict_res
 
