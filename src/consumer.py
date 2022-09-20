@@ -2,40 +2,57 @@ import pika
 import os
 import json
 from dotenv import load_dotenv
-from pulp import LpProblem, GUROBI
+from pulp import LpProblem, GUROBI, LpStatus, GUROBI_CMD
 from logs import GurobiLogging
 from azure.storage.fileshare import ShareFileClient
 
 load_dotenv()
 
-conn_str = ("DefaultEndpointsProtocol=https;AccountName=aksexternalglobal;"
-            "AccountKey=BpoiAAv0Sf0P5zdipcFa/seeAya7pl6f2v5BVf8MYqtsqE1wWgWXZ51j5jkUknF4B541o0b36fWHTMiLzQmAKw==;"
-            "EndpointSuffix=core.windows.net")
+conn_str = (
+    "DefaultEndpointsProtocol=https;AccountName=aksexternalglobal;"
+    "AccountKey=BpoiAAv0Sf0P5zdipcFa/seeAya7pl6f2v5BVf8MYqtsqE1wWgWXZ51j5jkUknF4B541o0b36fWHTMiLzQmAKw==;"
+    "EndpointSuffix=core.windows.net"
+)
+
 
 def startConsumer():
     def _solve_model(dict_model, params, job_id):
-        os.system("killall -9 gurobi_cl")
         log_filename = f"gurobi_log_{job_id}"
         _, model = LpProblem.from_dict(dict_model)
+        # model.solve(
+        # GUROBI_CMD(
+        #         options=[
+        #             ("timeLimit", float(params["timeLimit"])),
+        #             ("MIPgap", float(params["gapRel"])),
+        #         ]
+        #     )
+        # )
+        # print("Show me the model status:")
+        # print(LpStatus[model.status])
+        # return model.to_dict()
+        print("Show me the raw model status:")
+        print(LpStatus[model.status])
         with GurobiLogging(log_filename=log_filename, job_id=job_id):
+            os.system("killall -9 gurobi_cl")
             model.solve(
-                GUROBI(
-                    logPath=log_filename,
-                    timeLimit=float(params["timeLimit"]),
-                    gapRel=float(params["gapRel"])
+                GUROBI_CMD(
+                    options=[
+                        ("timeLimit", float(params["timeLimit"])),
+                        ("MIPgap", float(params["gapRel"])),
+                    ]
                 )
             )
-        return model.to_dict()
+            return model.to_dict()
 
     def pull_model_from_sa(file_name: str):
         file_share_client = ShareFileClient.from_connection_string(
-                conn_str=conn_str,
-                share_name=f"gurobi-{os.getenv('PYTHON_ENV')}",
-                file_path=f"un-opt-models/{file_name}"
-            )
+            conn_str=conn_str,
+            share_name=f"gurobi-{os.getenv('PYTHON_ENV')}",
+            file_path=f"un-opt-models/{file_name}",
+        )
         data = file_share_client.download_file()
         return json.loads(data.readall())
-    
+
     def push_model_to_sa(file_name: str, dict_model_out: dict):
         try:
             file_share_client = ShareFileClient.from_connection_string(
@@ -59,7 +76,9 @@ def startConsumer():
                 "timeLimit": json_model["timeLimit"],
                 "gapRel": json_model["gapRel"],
             }
-            dict_res[model_id] = _solve_model(json_model["model"], params, job_id=job_id)
+            dict_res[model_id] = _solve_model(
+                json_model["model"], params, job_id=job_id
+            )
 
         return dict_res
 
@@ -81,7 +100,7 @@ def startConsumer():
             host=f"rabbitmq-{os.getenv('PYTHON_ENV')}.flowlity.com",
             port="5672",
             credentials=credentials,
-            heartbeat=0
+            heartbeat=0,
         )
     )
 
