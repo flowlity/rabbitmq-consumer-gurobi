@@ -21,10 +21,8 @@ def startConsumer():
             model.solve(
                 GUROBI(
                     logPath=log_filename,
-                    options=[
-                        ("timeLimit", float(params["timeLimit"])),
-                        ("MIPgap", float(params["gapRel"])),
-                    ],
+                    timeLimit=float(params["timeLimit"]),
+                    gapRel=float(params["gapRel"])
                 )
             )
         return model.to_dict()
