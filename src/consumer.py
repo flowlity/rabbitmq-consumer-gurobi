@@ -83,7 +83,7 @@ def startConsumer():
             host=f"rabbitmq-{os.getenv('PYTHON_ENV')}.flowlity.com",
             port="5672",
             credentials=credentials,
-            heartbeat=1000
+            heartbeat=0
         )
     )
 
