@@ -19,19 +19,6 @@ def startConsumer():
     def _solve_model(dict_model, params, job_id):
         log_filename = f"gurobi_log_{job_id}"
         _, model = LpProblem.from_dict(dict_model)
-        # model.solve(
-        # GUROBI_CMD(
-        #         options=[
-        #             ("timeLimit", float(params["timeLimit"])),
-        #             ("MIPgap", float(params["gapRel"])),
-        #         ]
-        #     )
-        # )
-        # print("Show me the model status:")
-        # print(LpStatus[model.status])
-        # return model.to_dict()
-        print("Show me the raw model status:")
-        print(LpStatus[model.status])
         with GurobiLogging(log_filename=log_filename, job_id=job_id):
             os.system("killall -9 gurobi_cl")
             model.solve(
