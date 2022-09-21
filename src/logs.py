@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-run_environment = os.getenv("version", "local")
+run_environment = os.getenv("PYTHON_ENV", "local")
 server_name = platform.node()
 
 
@@ -76,3 +76,6 @@ class GurobiLogging:
 
     def __exit__(self, exception_type, value, traceback):
         self.gurobi_finished.set()
+
+# class ConsumerLogger:
+#     def __init__(self):
