@@ -77,5 +77,6 @@ class GurobiLogging:
     def __exit__(self, exception_type, value, traceback):
         self.gurobi_finished.set()
 
+
 # class ConsumerLogger:
 #     def __init__(self):
