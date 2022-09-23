@@ -37,5 +37,7 @@ try:
     channel.start_consuming()
 except KeyboardInterrupt:
     channel.stop_consuming()
+except Exception as error:
+    print(error)
 
 channel.close()
