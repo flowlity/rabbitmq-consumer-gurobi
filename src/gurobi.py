@@ -2,6 +2,7 @@ import functools
 import os
 import json
 
+from datetime import datetime
 from pulp import LpProblem, GUROBI_CMD
 from logs import GurobiLogging
 from azure.storage.fileshare import ShareFileClient
@@ -15,6 +16,7 @@ conn_str = (
     "AccountKey=BpoiAAv0Sf0P5zdipcFa/seeAya7pl6f2v5BVf8MYqtsqE1wWgWXZ51j5jkUknF4B541o0b36fWHTMiLzQmAKw==;"
     "EndpointSuffix=core.windows.net"
 )
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
 
 
 def pull_model_from_sa(file_name: str):
@@ -56,7 +58,8 @@ def _solve_model(dict_model, params, job_id):
                 ]
             )
         )
-        return model.to_dict()
+        return {
+            'solution_time': model.solutionTime, 'model_dict': model.to_dict()}
 
 
 def solve_model(job_id: str):
@@ -92,7 +95,11 @@ def do_work(channel, method, properties, body, args):
     job_id = properties.message_id
 
     # gurobi start
+    start = datetime.now()
     dict_model_out = solve_model(job_id)
+    end = datetime.now()
+    dict_model_out["solver_start_end_dates"] = (
+        start.strftime(DATE_FORMAT), end.strftime(DATE_FORMAT))
     push_model_to_sa(file_name=job_id, dict_model_out=dict_model_out)
     # gurobi end
 
