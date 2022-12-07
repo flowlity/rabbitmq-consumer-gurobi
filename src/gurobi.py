@@ -101,6 +101,7 @@ def do_work(channel, method, properties, body, args):
     dict_model_out["solver_start_end_dates"] = (
         start.strftime(DATE_FORMAT), end.strftime(DATE_FORMAT))
     push_model_to_sa(file_name=job_id, dict_model_out=dict_model_out)
+    os.system("killall -9 gurobi_cl")
     # gurobi end
 
     cb = functools.partial(ack_message, channel, delivery_tag)
